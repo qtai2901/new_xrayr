@@ -14,18 +14,19 @@ import (
 	"github.com/xtls/xray-core/core"
 	"github.com/xtls/xray-core/infra/conf"
 
-	"github.com/XrayR-project/XrayR/api"
-	"github.com/XrayR-project/XrayR/api/bunpanel"
-	"github.com/XrayR-project/XrayR/api/gov2panel"
-	"github.com/XrayR-project/XrayR/api/newV2board"
-	"github.com/XrayR-project/XrayR/api/pmpanel"
-	"github.com/XrayR-project/XrayR/api/proxypanel"
-	"github.com/XrayR-project/XrayR/api/sspanel"
-	"github.com/XrayR-project/XrayR/api/v2raysocks"
-	"github.com/XrayR-project/XrayR/app/mydispatcher"
-	_ "github.com/XrayR-project/XrayR/cmd/distro/all"
-	"github.com/XrayR-project/XrayR/service"
-	"github.com/XrayR-project/XrayR/service/controller"
+	"github.com/qtai2901/new_xrayr/api"
+	"github.com/qtai2901/new_xrayr/api/bunpanel"
+	"github.com/qtai2901/new_xrayr/api/gov2panel"
+	"github.com/qtai2901/new_xrayr/api/newV2board"
+	"github.com/qtai2901/new_xrayr/api/v2board"
+	"github.com/qtai2901/new_xrayr/api/pmpanel"
+	"github.com/qtai2901/new_xrayr/api/proxypanel"
+	"github.com/qtai2901/new_xrayr/api/sspanel"
+	"github.com/qtai2901/new_xrayr/api/v2raysocks"
+	"github.com/qtai2901/new_xrayr/app/mydispatcher"
+	_ "github.com/qtai2901/new_xrayr/cmd/distro/all"
+	"github.com/qtai2901/new_xrayr/service"
+	"github.com/qtai2901/new_xrayr/service/controller"
 )
 
 // Panel Structure
@@ -178,6 +179,8 @@ func (p *Panel) Start() {
 			apiClient = sspanel.New(nodeConfig.ApiConfig)
 		case "NewV2board", "V2board":
 			apiClient = newV2board.New(nodeConfig.ApiConfig)
+		case "V2board":
+			apiClient = v2board.New(nodeConfig.ApiConfig)
 		case "PMpanel":
 			apiClient = pmpanel.New(nodeConfig.ApiConfig)
 		case "Proxypanel":
