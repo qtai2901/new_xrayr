@@ -1,8 +1,8 @@
 package controller
 
 import (
-	"github.com/XrayR-project/XrayR/common/limiter"
-	"github.com/XrayR-project/XrayR/common/mylego"
+	"github.com/qtai2901/new_xrayr/common/limiter"
+	"github.com/qtai2901/new_xrayr/common/mylego"
 )
 
 type Config struct {
