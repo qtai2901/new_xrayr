@@ -211,7 +211,7 @@ func (c *APIClient) GetUserList() (UserList *[]api.UserInfo, err error) {
 	if err != nil {
 		return nil, err
 	}
-	var deviceLimit, localDeviceLimit int = 0, 0
+	// var deviceLimit, localDeviceLimit int = 0, 0
 	numOfUsers := len(response.Get("data").MustArray())
 	userList := make([]api.UserInfo, numOfUsers)
 	for i := 0; i < numOfUsers; i++ {
