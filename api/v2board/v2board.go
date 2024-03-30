@@ -223,30 +223,30 @@ func (c *APIClient) GetUserList() (UserList *[]api.UserInfo, err error) {
 		} else {
 			user.SpeedLimit = uint64(response.Get("data").GetIndex(i).Get("speed_limit").MustInt() * 1000000 / 8)
 		}
-		// user.DeviceLimit = c.DeviceLimit
-		if c.DeviceLimit > 0 {
-			deviceLimit = c.DeviceLimit
-		} else {
-			deviceLimit = int(response.Get("data").GetIndex(i).Get("limit_device").MustInt())
-		}
-		Online := int(response.Get("data").GetIndex(i).Get("device_online").MustInt())
-		if deviceLimit > 0 && Online > 0 {
-			lastOnline := 0
-			if v, ok := c.LastReportOnline[user.UID]; ok {
-				lastOnline = v
-			}
-			// If there are any available device.
-			if localDeviceLimit = deviceLimit - Online + lastOnline; localDeviceLimit > 0 {
-				deviceLimit = localDeviceLimit
-				// If this backend server has reported any user in the last reporting period.
-			} else if lastOnline > 0 {
-				deviceLimit = lastOnline
-				// Remove this user.
-			} else {
-				continue
-			}
-		}
-		user.DeviceLimit = deviceLimit
+		user.DeviceLimit = c.DeviceLimit
+		// if c.DeviceLimit > 0 {
+		// 	deviceLimit = c.DeviceLimit
+		// } else {
+		// 	deviceLimit = response.Get("data").GetIndex(i).Get("limit_device").MustInt()
+		// }
+		
+		// if deviceLimit > 0 && Online > 0 {
+		// 	lastOnline := 0
+		// 	if v, ok := c.LastReportOnline[user.UID]; ok {
+		// 		lastOnline = v
+		// 	}
+		// 	// If there are any available device.
+		// 	if localDeviceLimit = deviceLimit - response.Get("data").GetIndex(i).Get("device_online").MustInt() + lastOnline; localDeviceLimit > 0 {
+		// 		deviceLimit = localDeviceLimit
+		// 		// If this backend server has reported any user in the last reporting period.
+		// 	} else if lastOnline > 0 {
+		// 		deviceLimit = lastOnline
+		// 		// Remove this user.
+		// 	} else {
+		// 		continue
+		// 	}
+		// }
+		// user.DeviceLimit = deviceLimit
 		switch c.NodeType {
 		case "Shadowsocks":
 			user.Email = response.Get("data").GetIndex(i).Get("secret").MustString()
