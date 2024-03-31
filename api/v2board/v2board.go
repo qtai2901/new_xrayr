@@ -21,20 +21,20 @@ import (
 
 // APIClient create an api client to the panel.
 type APIClient struct {
-	client        *resty.Client
-	APIHost       string
-	NodeID        int
-	Key           string
-	NodeType      string
-	EnableVless   bool
-	VlessFlow     string
-	SpeedLimit    float64
-	DeviceLimit   int
-	DeviceOnline  int
-	LocalRuleList []api.DetectRule
+	client           *resty.Client
+	APIHost          string
+	NodeID           int
+	Key              string
+	NodeType         string
+	EnableVless      bool
+	VlessFlow        string
+	SpeedLimit       float64
+	DeviceLimit      int
+	DeviceOnline     int
+	LocalRuleList    []api.DetectRule
 	LastReportOnline map[int]int
-	ConfigResp    *simplejson.Json
-	access        sync.Mutex
+	ConfigResp       *simplejson.Json
+	access           sync.Mutex
 }
 
 // New create an api instance
@@ -211,7 +211,7 @@ func (c *APIClient) GetUserList() (UserList *[]api.UserInfo, err error) {
 	if err != nil {
 		return nil, err
 	}
-	var deviceLimit, localDeviceLimit int = 0, 0
+	// var deviceLimit, localDeviceLimit int = 0, 0
 	numOfUsers := len(response.Get("data").MustArray())
 	userList := make([]api.UserInfo, numOfUsers)
 	for i := 0; i < numOfUsers; i++ {
@@ -230,23 +230,38 @@ func (c *APIClient) GetUserList() (UserList *[]api.UserInfo, err error) {
 			deviceLimit = response.Get("data").GetIndex(i).Get("limit_device").MustInt()
 		}
 		// Online := response.Get("data").GetIndex(i).Get("device_online").MustInt()
-		if deviceLimit > 0 && response.Get("data").GetIndex(i).Get("device_online").MustInt() > 0 {
+		deviceLimit := 0
+		if c.DeviceLimit > 0 {
+			deviceLimit = c.DeviceLimit
+		} else {
+			deviceLimit = response.Get("data").GetIndex(i).Get("limit_device").MustInt()
+		}
+
+		// Kiểm tra xem số lượng thiết bị trực tuyến có vượt quá giới hạn không.
+		if deviceLimit > 0 && response.Get("data").GetIndex(i).Get("device_online").MustInt() <= deviceLimit {
+			// Nếu số lượng thiết bị trực tuyến không vượt quá giới hạn, tiếp tục với logic khác.
+			// Đoạn mã tiếp theo ở đây.
 			lastOnline := 0
 			if v, ok := c.LastReportOnline[response.Get("data").GetIndex(i).Get("id").MustInt()]; ok {
 				lastOnline = v
 			}
-			// If there are any available device.
-			if localDeviceLimit = deviceLimit - response.Get("data").GetIndex(i).Get("device_online").MustInt() + lastOnline; localDeviceLimit > 0 {
+
+			localDeviceLimit := deviceLimit - response.Get("data").GetIndex(i).Get("device_online").MustInt() + lastOnline
+			if localDeviceLimit > 0 {
 				deviceLimit = localDeviceLimit
-				// If this backend server has reported any user in the last reporting period.
 			} else if lastOnline > 0 {
 				deviceLimit = lastOnline
-				// Remove this user.
 			} else {
-				continue
+				// Trong trường hợp không có thiết bị khả dụng hoặc có thông tin cuối cùng về trực tuyến.
+				// Bạn có thể đưa ra quyết định tiếp theo ở đây.
 			}
+		} else {
+			// Nếu số lượng thiết bị trực tuyến vượt quá giới hạn, bỏ qua thiết bị này.
+			continue
 		}
+
 		user.DeviceLimit = deviceLimit
+
 		switch c.NodeType {
 		case "Shadowsocks":
 			user.Email = response.Get("data").GetIndex(i).Get("secret").MustString()
@@ -268,7 +283,7 @@ func (c *APIClient) GetUserList() (UserList *[]api.UserInfo, err error) {
 
 // ReportNodeOnlineUsers reports online user ip
 func (c *APIClient) ReportNodeOnlineUsers(onlineUserList *[]api.OnlineUser) error {
-    c.access.Lock()
+	c.access.Lock()
 	defer c.access.Unlock()
 
 	reportOnline := make(map[int]int)
