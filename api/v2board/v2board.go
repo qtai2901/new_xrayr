@@ -60,7 +60,7 @@ func New(apiConfig *api.Config) *APIClient {
 		nodeType = "vless"
 	} else {
 		nodeType = strings.ToLower(apiConfig.NodeType)
-	
+	}
 	client.SetQueryParams(map[string]string{
 		"node_id": strconv.Itoa(apiConfig.NodeID),
 		"node_type": nodeType,
