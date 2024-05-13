@@ -56,8 +56,14 @@ func New(apiConfig *api.Config) *APIClient {
 	})
 	client.SetBaseURL(apiConfig.APIHost)
 	// Create Key for each requests
+	if apiConfig.NodeType == "V2ray" && apiConfig.EnableVless {
+		nodeType = "vless"
+	} else {
+		nodeType = strings.ToLower(apiConfig.NodeType)
+	
 	client.SetQueryParams(map[string]string{
 		"node_id": strconv.Itoa(apiConfig.NodeID),
+		"nodeType":nodeType,
 		"token":   apiConfig.Key,
 	})
 	// Read local rule list
@@ -223,39 +229,39 @@ func (c *APIClient) GetUserList() (UserList *[]api.UserInfo, err error) {
 		} else {
 			user.SpeedLimit = uint64(response.Get("data").GetIndex(i).Get("speed_limit").MustInt() * 1000000 / 8)
 		}
-		// user.DeviceLimit = c.DeviceLimit
+		user.DeviceLimit = c.DeviceLimit
 		
-		deviceLimit := 0
-		if c.DeviceLimit > 0 {
-			deviceLimit = c.DeviceLimit
-		} else {
-			deviceLimit = response.Get("data").GetIndex(i).Get("limit_device").MustInt()
-		}
+		// deviceLimit := 0
+		// if c.DeviceLimit > 0 {
+		// 	deviceLimit = c.DeviceLimit
+		// } else {
+		// 	deviceLimit = response.Get("data").GetIndex(i).Get("limit_device").MustInt()
+		// }
 
-		// Kiểm tra xem số lượng thiết bị trực tuyến có vượt quá giới hạn không.
-		if deviceLimit > 0 && response.Get("data").GetIndex(i).Get("device_online").MustInt() <= deviceLimit {
-			// Nếu số lượng thiết bị trực tuyến không vượt quá giới hạn, tiếp tục với logic khác.
-			// Đoạn mã tiếp theo ở đây.
-			lastOnline := 0
-			if v, ok := c.LastReportOnline[response.Get("data").GetIndex(i).Get("id").MustInt()]; ok {
-				lastOnline = v
-			}
+		// // Kiểm tra xem số lượng thiết bị trực tuyến có vượt quá giới hạn không.
+		// if deviceLimit > 0 && response.Get("data").GetIndex(i).Get("device_online").MustInt() <= deviceLimit {
+		// 	// Nếu số lượng thiết bị trực tuyến không vượt quá giới hạn, tiếp tục với logic khác.
+		// 	// Đoạn mã tiếp theo ở đây.
+		// 	lastOnline := 0
+		// 	if v, ok := c.LastReportOnline[response.Get("data").GetIndex(i).Get("id").MustInt()]; ok {
+		// 		lastOnline = v
+		// 	}
 
-			localDeviceLimit := deviceLimit - response.Get("data").GetIndex(i).Get("device_online").MustInt() + lastOnline
-			if localDeviceLimit > 0 {
-				deviceLimit = localDeviceLimit
-			} else if lastOnline > 0 {
-				deviceLimit = lastOnline
-			} else {
-				// Trong trường hợp không có thiết bị khả dụng hoặc có thông tin cuối cùng về trực tuyến.
-				// Bạn có thể đưa ra quyết định tiếp theo ở đây.
-			}
-		} else {
-			// Nếu số lượng thiết bị trực tuyến vượt quá giới hạn, bỏ qua thiết bị này.
-			continue
-		}
+		// 	localDeviceLimit := deviceLimit - response.Get("data").GetIndex(i).Get("device_online").MustInt() + lastOnline
+		// 	if localDeviceLimit > 0 {
+		// 		deviceLimit = localDeviceLimit
+		// 	} else if lastOnline > 0 {
+		// 		deviceLimit = lastOnline
+		// 	} else {
+		// 		// Trong trường hợp không có thiết bị khả dụng hoặc có thông tin cuối cùng về trực tuyến.
+		// 		// Bạn có thể đưa ra quyết định tiếp theo ở đây.
+		// 	}
+		// } else {
+		// 	// Nếu số lượng thiết bị trực tuyến vượt quá giới hạn, bỏ qua thiết bị này.
+		// 	continue
+		// }
 
-		user.DeviceLimit = deviceLimit
+		// user.DeviceLimit = deviceLimit
 
 		switch c.NodeType {
 		case "Shadowsocks":
@@ -305,6 +311,7 @@ func (c *APIClient) ReportNodeOnlineUsers(onlineUserList *[]api.OnlineUser) erro
 	}
 	res, err := c.client.R().
 		SetQueryParam("node_id", strconv.Itoa(c.NodeID)).
+		SetQueryParam("nodeType", strings.ToLower(apiConfig.NodeType).
 		SetBody(data).
 		ForceContentType("application/json").
 		Post(path)
@@ -338,6 +345,7 @@ func (c *APIClient) ReportUserTraffic(userTraffic *[]api.UserTraffic) error {
 
 	res, err := c.client.R().
 		SetQueryParam("node_id", strconv.Itoa(c.NodeID)).
+		SetQueryParam("nodeType", strings.ToLower(apiConfig.NodeType)).
 		SetBody(data).
 		ForceContentType("application/json").
 		Post(path)
