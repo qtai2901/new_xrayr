@@ -167,10 +167,10 @@ func (c *APIClient) GetNodeInfo() (nodeInfo *api.NodeInfo, err error) {
 		return nil, fmt.Errorf("unsupported Node type: %s", c.NodeType)
 	}
 	var nodeType string
-	if apiConfig.NodeType == "V2ray" && apiConfig.EnableVless {
+	if c.NodeType == "V2ray" && c.EnableVless {
 		nodeType = "vless"
 	} else {
-		nodeType = strings.ToLower(apiConfig.NodeType)
+		nodeType = strings.ToLower(c.NodeType)
 	}
 
 	res, err := c.client.R().
