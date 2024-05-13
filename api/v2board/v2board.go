@@ -56,6 +56,7 @@ func New(apiConfig *api.Config) *APIClient {
 	})
 	client.SetBaseURL(apiConfig.APIHost)
 	// Create Key for each requests
+	var nodeType string
 	if apiConfig.NodeType == "V2ray" && apiConfig.EnableVless {
 		nodeType = "vless"
 	} else {
