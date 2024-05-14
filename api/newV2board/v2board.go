@@ -34,6 +34,7 @@ type APIClient struct {
 	SpeedLimit    float64
 	DeviceLimit   int
 	LocalRuleList []api.DetectRule
+	LastReportOnline map[int]int
 	resp          atomic.Value
 	eTags         map[string]string
 }
