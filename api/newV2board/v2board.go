@@ -237,26 +237,50 @@ func (c *APIClient) GetUserList() (UserList *[]api.UserInfo, err error) {
 		return nil, errors.New("users is null")
 	}
 
-	userList := make([]api.UserInfo, len(users))
-	for i := 0; i < len(users); i++ {
+	var deviceLimit, localDeviceLimit int = 0, 0
+	var userList []api.UserInfo
+	for _, user := range users {
 		u := api.UserInfo{
-			UID:  users[i].Id,
-			UUID: users[i].Uuid,
+			UID:  user.Id,
+			UUID: user.Uuid,
 		}
-
 		// Support 1.7.1 speed limit
 		if c.SpeedLimit > 0 {
 			u.SpeedLimit = uint64(c.SpeedLimit * 1000000 / 8)
 		} else {
-			u.SpeedLimit = uint64(users[i].SpeedLimit * 1000000 / 8)
+			u.SpeedLimit = uint64(user.SpeedLimit * 1000000 / 8)
+		}
+		//Prefer local config
+		if c.DeviceLimit > 0 {
+			deviceLimit = c.DeviceLimit
+		} else {
+			deviceLimit = user.DeviceLimit
 		}
 
-		u.DeviceLimit = c.DeviceLimit // todo waiting v2board send configuration
+		// If there is still device available, add the user
+		if deviceLimit > 0 && user.AliveIp > 0 {
+			lastOnline := 0
+			if v, ok := c.LastReportOnline[user.Id]; ok {
+				lastOnline = v
+			}
+			// If there are any available device.
+			if localDeviceLimit = deviceLimit - user.AliveIp + lastOnline; localDeviceLimit > 0 {
+				deviceLimit = localDeviceLimit
+				// If this backend server has reported any user in the last reporting period.
+			} else if lastOnline > 0 {
+				deviceLimit = lastOnline
+				// Remove this user.
+			} else {
+				continue
+			}
+		}
+		u.DeviceLimit = deviceLimit
 		u.Email = u.UUID + "@v2board.user"
 		if c.NodeType == "Shadowsocks" {
 			u.Passwd = u.UUID
 		}
-		userList[i] = u
+
+		userList = append(userList, u)
 	}
 
 	return &userList, nil
@@ -306,6 +330,27 @@ func (c *APIClient) ReportNodeStatus(nodeStatus *api.NodeStatus) (err error) {
 
 // ReportNodeOnlineUsers implements the API interface
 func (c *APIClient) ReportNodeOnlineUsers(onlineUserList *[]api.OnlineUser) error {
+	reportOnline := make(map[int]int)
+	data := make(map[int][]string)
+	for _, onlineuser := range *onlineUserList {
+		// json structure: { UID1:["ip1","ip2"],UID2:["ip3","ip4"] }
+		data[onlineuser.UID] = append(data[onlineuser.UID], onlineuser.IP)
+		if _, ok := reportOnline[onlineuser.UID]; ok {
+			reportOnline[onlineuser.UID]++
+		} else {
+			reportOnline[onlineuser.UID] = 1
+		}
+	}
+	c.LastReportOnline = reportOnline // Update LastReportOnline
+
+	path := "/api/v1/server/UniProxy/alive"
+	res, err := c.client.R().SetBody(data).ForceContentType("application/json").Post(path)
+	_, err = c.parseResponse(res, path, err)
+	// 面板无对应接口时先不报错
+	if err != nil {
+		return nil
+	}
+
 	return nil
 }
 

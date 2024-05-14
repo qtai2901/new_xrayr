@@ -56,15 +56,9 @@ func New(apiConfig *api.Config) *APIClient {
 	})
 	client.SetBaseURL(apiConfig.APIHost)
 	// Create Key for each requests
-	var nodeType string
-	if apiConfig.NodeType == "V2ray" && apiConfig.EnableVless {
-		nodeType = "vless"
-	} else {
-		nodeType = strings.ToLower(apiConfig.NodeType)
-	}
+	
 	client.SetQueryParams(map[string]string{
 		"node_id": strconv.Itoa(apiConfig.NodeID),
-		"node_type": nodeType,
 		"token":   apiConfig.Key,
 	})
 	// Read local rule list
@@ -166,17 +160,11 @@ func (c *APIClient) GetNodeInfo() (nodeInfo *api.NodeInfo, err error) {
 	default:
 		return nil, fmt.Errorf("unsupported Node type: %s", c.NodeType)
 	}
-	var nodeType string
-	if c.NodeType == "V2ray" && c.EnableVless {
-		nodeType = "vless"
-	} else {
-		nodeType = strings.ToLower(c.NodeType)
-	}
+	
 
 	res, err := c.client.R().
 		SetQueryParam("local_port", "1").
 		ForceContentType("application/json").
-		SetQueryParam("node_type", nodeType).
 		Get(path)
 
 	response, err := c.parseResponse(res, path, err)
@@ -320,7 +308,6 @@ func (c *APIClient) ReportNodeOnlineUsers(onlineUserList *[]api.OnlineUser) erro
 	}
 	res, err := c.client.R().
 		SetQueryParam("node_id", strconv.Itoa(c.NodeID)).
-		SetQueryParam("node_type", strings.ToLower(c.NodeType)).
 		SetBody(data).
 		ForceContentType("application/json").
 		Post(path)
@@ -354,7 +341,6 @@ func (c *APIClient) ReportUserTraffic(userTraffic *[]api.UserTraffic) error {
 
 	res, err := c.client.R().
 		SetQueryParam("node_id", strconv.Itoa(c.NodeID)).
-		SetQueryParam("node_type", strings.ToLower(c.NodeType)).
 		SetBody(data).
 		ForceContentType("application/json").
 		Post(path)
