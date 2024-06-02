@@ -306,6 +306,27 @@ func (c *APIClient) ReportNodeStatus(nodeStatus *api.NodeStatus) (err error) {
 
 // ReportNodeOnlineUsers implements the API interface
 func (c *APIClient) ReportNodeOnlineUsers(onlineUserList *[]api.OnlineUser) error {
+	reportOnline := make(map[int]int)
+	data := make(map[int][]string)
+	for _, onlineuser := range *onlineUserList {
+		// json structure: { UID1:["ip1","ip2"],UID2:["ip3","ip4"] }
+		data[onlineuser.UID] = append(data[onlineuser.UID], onlineuser.IP)
+		if _, ok := reportOnline[onlineuser.UID]; ok {
+			reportOnline[onlineuser.UID]++
+		} else {
+			reportOnline[onlineuser.UID] = 1
+		}
+	}
+	c.LastReportOnline = reportOnline // Update LastReportOnline
+
+	path := "/api/v1/server/UniProxy/alive"
+	res, err := c.client.R().SetBody(data).ForceContentType("application/json").Post(path)
+	_, err = c.parseResponse(res, path, err)
+	// 面板无对应接口时先不报错
+	if err != nil {
+		return nil
+	}
+
 	return nil
 }
 
@@ -413,6 +434,20 @@ func (c *APIClient) parseV2rayNodeResponse(s *serverConfig) (*api.NodeInfo, erro
 				header = httpHeader
 			}
 		}
+	case "h2":
+		if s.NetworkSettings.Header != nil {
+			if httpHeader, err := s.NetworkSettings.Header.MarshalJSON(); err != nil {
+				return nil, err
+			} else {
+				header = httpHeader
+			}
+		}
+		if s.NetworkSettings.Host != "" {
+			host = s.NetworkSettings.Host
+		} else {
+			host = "www.example.com"
+		}
+	
 	}
 
 	switch s.Tls {

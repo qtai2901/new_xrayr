@@ -45,7 +45,7 @@ type v2ray struct {
 	VlessTlsSettings struct {
 		ServerPort string `json:"server_port"`
 		Dest       string `json:"dest"`
-		xVer       uint64 `json:"xver"`
+		xVer       uint64 `json:"xver,string"`
 		Sni        string `json:"server_name"`
 		PrivateKey string `json:"private_key"`
 		ShortId    string `json:"short_id"`
