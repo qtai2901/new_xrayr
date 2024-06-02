@@ -1,10 +1,10 @@
-package newV2board_test
+package v2board_test
 
 import (
 	"testing"
 
 	"github.com/qtai2901/new_xrayr/api"
-	"github.com/qtai2901/new_xrayr/api/newV2board"
+	"github.com/qtai2901/new_xrayr/api/v2board"
 )
 
 func CreateClient() api.API {
@@ -14,11 +14,11 @@ func CreateClient() api.API {
 		NodeID:   1,
 		NodeType: "V2ray",
 	}
-	client := newV2board.New(apiConfig)
+	client := v2board.New(apiConfig)
 	return client
 }
 
-func TestGetV2rayNodeInfo(t *testing.T) {
+func TestGetV2rayNodeinfo(t *testing.T) {
 	client := CreateClient()
 	nodeInfo, err := client.GetNodeInfo()
 	if err != nil {
@@ -27,14 +27,14 @@ func TestGetV2rayNodeInfo(t *testing.T) {
 	t.Log(nodeInfo)
 }
 
-func TestGetSSNodeInfo(t *testing.T) {
+func TestGetSSNodeinfo(t *testing.T) {
 	apiConfig := &api.Config{
 		APIHost:  "http://127.0.0.1:668",
 		Key:      "qwertyuiopasdfghjkl",
 		NodeID:   1,
 		NodeType: "Shadowsocks",
 	}
-	client := newV2board.New(apiConfig)
+	client := v2board.New(apiConfig)
 	nodeInfo, err := client.GetNodeInfo()
 	if err != nil {
 		t.Error(err)
@@ -42,14 +42,14 @@ func TestGetSSNodeInfo(t *testing.T) {
 	t.Log(nodeInfo)
 }
 
-func TestGetTrojanNodeInfo(t *testing.T) {
+func TestGetTrojanNodeinfo(t *testing.T) {
 	apiConfig := &api.Config{
 		APIHost:  "http://127.0.0.1:668",
 		Key:      "qwertyuiopasdfghjkl",
 		NodeID:   1,
 		NodeType: "Trojan",
 	}
-	client := newV2board.New(apiConfig)
+	client := v2board.New(apiConfig)
 	nodeInfo, err := client.GetNodeInfo()
 	if err != nil {
 		t.Error(err)
