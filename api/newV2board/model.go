@@ -41,6 +41,7 @@ type v2ray struct {
 		Headers     *json.RawMessage `json:"headers"`
 		ServiceName string           `json:"serviceName"`
 		Header      *json.RawMessage `json:"header"`
+		Host        string           `json:"host"`
 	} `json:"network_settings"`
 	VlessFlow   string `json:"flow"`
 	VlessTlsSettings struct {
