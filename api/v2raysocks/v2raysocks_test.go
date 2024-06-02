@@ -3,8 +3,8 @@ package v2raysocks_test
 import (
 	"testing"
 
-	"github.com/XrayR-project/XrayR/api"
-	"github.com/XrayR-project/XrayR/api/v2raysocks"
+	"github.com/qtai2901/new_xrayr/api"
+	"github.com/qtai2901/new_xrayr/api/v2raysocks"
 )
 
 func CreateClient() api.API {

@@ -19,7 +19,7 @@ import (
 	"github.com/xtls/xray-core/common/net"
 	"github.com/xtls/xray-core/infra/conf"
 
-	"github.com/XrayR-project/XrayR/api"
+	"github.com/qtai2901/new_xrayr/api"
 )
 
 // APIClient create an api client to the panel.
@@ -34,6 +34,7 @@ type APIClient struct {
 	SpeedLimit    float64
 	DeviceLimit   int
 	LocalRuleList []api.DetectRule
+	LastReportOnline map[int]in
 	resp          atomic.Value
 	eTags         map[string]string
 }
@@ -306,6 +307,27 @@ func (c *APIClient) ReportNodeStatus(nodeStatus *api.NodeStatus) (err error) {
 
 // ReportNodeOnlineUsers implements the API interface
 func (c *APIClient) ReportNodeOnlineUsers(onlineUserList *[]api.OnlineUser) error {
+	reportOnline := make(map[int]int)
+	data := make(map[int][]string)
+	for _, onlineuser := range *onlineUserList {
+		// json structure: { UID1:["ip1","ip2"],UID2:["ip3","ip4"] }
+		data[onlineuser.UID] = append(data[onlineuser.UID], onlineuser.IP)
+		if _, ok := reportOnline[onlineuser.UID]; ok {
+			reportOnline[onlineuser.UID]++
+		} else {
+			reportOnline[onlineuser.UID] = 1
+		}
+	}
+	c.LastReportOnline = reportOnline // Update LastReportOnline
+
+	path := "/api/v1/server/UniProxy/alive"
+	res, err := c.client.R().SetBody(data).ForceContentType("application/json").Post(path)
+	_, err = c.parseResponse(res, path, err)
+	// 面板无对应接口时先不报错
+	if err != nil {
+		return nil
+	}
+
 	return nil
 }
 
