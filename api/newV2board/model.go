@@ -34,20 +34,18 @@ type v2ray struct {
 		Headers     *json.RawMessage `json:"headers"`
 		ServiceName string           `json:"serviceName"`
 		Header      *json.RawMessage `json:"header"`
-		Host        string           `json:"host"`
 	} `json:"networkSettings"`
 	VlessNetworkSettings struct {
 		Path        string           `json:"path"`
 		Headers     *json.RawMessage `json:"headers"`
 		ServiceName string           `json:"serviceName"`
 		Header      *json.RawMessage `json:"header"`
-		Host        string           `json:"host"`
 	} `json:"network_settings"`
 	VlessFlow   string `json:"flow"`
 	VlessTlsSettings struct {
 		ServerPort string `json:"server_port"`
 		Dest       string `json:"dest"`
-		xVer       uint64 `json:"xver,string"`
+		xVer       uint64 `json:"xver"`
 		Sni        string `json:"server_name"`
 		PrivateKey string `json:"private_key"`
 		ShortId    string `json:"short_id"`

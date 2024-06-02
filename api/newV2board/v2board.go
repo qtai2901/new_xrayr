@@ -19,7 +19,7 @@ import (
 	"github.com/xtls/xray-core/common/net"
 	"github.com/xtls/xray-core/infra/conf"
 
-	"github.com/qtai2901/new_xrayr/api"
+	"github.com/XrayR-project/XrayR/api"
 )
 
 // APIClient create an api client to the panel.
@@ -34,7 +34,7 @@ type APIClient struct {
 	SpeedLimit    float64
 	DeviceLimit   int
 	LocalRuleList []api.DetectRule
-	LastReportOnline map[int]int
+	LastReportOnline map[int]in
 	resp          atomic.Value
 	eTags         map[string]string
 }
@@ -435,20 +435,6 @@ func (c *APIClient) parseV2rayNodeResponse(s *serverConfig) (*api.NodeInfo, erro
 				header = httpHeader
 			}
 		}
-	case "h2":
-		if s.NetworkSettings.Header != nil {
-			if httpHeader, err := s.NetworkSettings.Header.MarshalJSON(); err != nil {
-				return nil, err
-			} else {
-				header = httpHeader
-			}
-		}
-		if s.NetworkSettings.Host != "" {
-			host = s.NetworkSettings.Host
-		} else {
-			host = "www.example.com"
-		}
-	
 	}
 
 	switch s.Tls {
